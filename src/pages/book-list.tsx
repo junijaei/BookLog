@@ -1,8 +1,9 @@
 import { BookCard } from '@/components/book-card';
-import { PageHeader } from '@/components/page-header';
+import { BookCardSkeleton } from '@/components/skeletons';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { useReadingRecords } from '@/hooks';
 import {
   BUTTON_LABELS,
@@ -16,12 +17,29 @@ import type { ReadingRecordFilters, ReadingRecordSort, ReadingStatus } from '@/t
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+type SortField = 'updated_at' | 'start_date' | 'end_date';
+
+const SORT_OPTIONS: { value: SortField; label: string }[] = [
+  { value: 'updated_at', label: FILTER_LABELS.SORT_BY_UPDATED },
+  { value: 'start_date', label: FILTER_LABELS.SORT_BY_START_DATE },
+  { value: 'end_date', label: FILTER_LABELS.SORT_BY_END_DATE },
+];
+
+const STATUS_OPTIONS: { value: ReadingStatus | 'all'; label: string }[] = [
+  { value: 'all', label: FILTER_LABELS.ALL },
+  { value: 'want_to_read', label: getReadingStatusLabel('want_to_read') },
+  { value: 'reading', label: getReadingStatusLabel('reading') },
+  { value: 'finished', label: getReadingStatusLabel('finished') },
+  { value: 'abandoned', label: getReadingStatusLabel('abandoned') },
+];
+
 export function BookListPage() {
   const [filters, setFilters] = useState<ReadingRecordFilters>({});
   const [sort, setSort] = useState<ReadingRecordSort>({
     field: 'updated_at',
     direction: 'desc',
   });
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useReadingRecords(
     filters,
@@ -53,104 +71,112 @@ export function BookListPage() {
     setFilters(prev => ({ ...prev, search: e.target.value || undefined }));
   };
 
-  const handleStatusFilter = (status: ReadingStatus | 'all') => {
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value as ReadingStatus | 'all';
     setFilters(prev => ({
       ...prev,
-      status: status === 'all' ? undefined : [status],
+      status: value === 'all' ? undefined : [value],
     }));
   };
 
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSort({ field: e.target.value as SortField, direction: 'desc' });
+  };
+
+  const hasActiveFilters = filters.search || filters.status;
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <PageHeader
-        title={PAGE_TITLES.BOOK_LIST}
-        actions={
-          <>
-            <ThemeToggle />
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b">
+        <div className="container mx-auto px-4 py-3 max-w-6xl">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl font-bold">{PAGE_TITLES.BOOK_LIST}</h1>
+            <div className="flex gap-2 items-center">
+              <Button
+                variant={showFilters || hasActiveFilters ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                {showFilters ? '필터 닫기' : '검색/필터'}
+                {hasActiveFilters && !showFilters && ' •'}
+              </Button>
+              <ThemeToggle />
+              <Link to="/books/new">
+                <Button size="sm">{BUTTON_LABELS.ADD_BOOK}</Button>
+              </Link>
+            </div>
+          </div>
+
+          {showFilters && (
+            <div className="mt-3 pb-1 space-y-3 animate-in slide-in-from-top-2 duration-200">
+              <Input
+                type="search"
+                placeholder={PLACEHOLDERS.SEARCH}
+                value={filters.search || ''}
+                onChange={handleSearchChange}
+                className="text-sm"
+              />
+              <div className="flex gap-2">
+                <Select
+                  value={filters.status?.[0] || 'all'}
+                  onChange={handleStatusChange}
+                  className="flex-1 text-sm"
+                >
+                  {STATUS_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+                <Select value={sort.field} onChange={handleSortChange} className="flex-1 text-sm">
+                  {SORT_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-4 max-w-6xl">
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <BookCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : records.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <p className="text-sm">{MESSAGES.NO_BOOKS_FOUND}</p>
             <Link to="/books/new">
-              <Button>{BUTTON_LABELS.ADD_BOOK}</Button>
+              <Button variant="outline" size="sm" className="mt-4">
+                {BUTTON_LABELS.ADD_FIRST_BOOK}
+              </Button>
             </Link>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {records.map(record => (
+                <BookCard key={record.reading_log.id} record={record} />
+              ))}
+            </div>
+
+            {isFetchingNextPage && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <BookCardSkeleton key={i} />
+                ))}
+              </div>
+            )}
           </>
-        }
-      />
+        )}
 
-      <div className="mb-6 space-y-4">
-        <Input
-          type="search"
-          placeholder={PLACEHOLDERS.SEARCH}
-          value={filters.search || ''}
-          onChange={handleSearchChange}
-          className="max-w-md"
-        />
-
-        <div className="flex gap-2 flex-wrap">
-          {(['all', 'want_to_read', 'reading', 'finished', 'abandoned'] as const).map(status => (
-            <Button
-              key={status}
-              variant={
-                status === 'all'
-                  ? !filters.status
-                    ? 'default'
-                    : 'outline'
-                  : filters.status?.includes(status)
-                    ? 'default'
-                    : 'outline'
-              }
-              size="sm"
-              onClick={() => handleStatusFilter(status)}
-            >
-              {status === 'all' ? FILTER_LABELS.ALL : getReadingStatusLabel(status)}
-            </Button>
-          ))}
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            variant={sort.field === 'updated_at' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSort({ field: 'updated_at', direction: 'desc' })}
-          >
-            {FILTER_LABELS.SORT_BY_UPDATED}
-          </Button>
-          <Button
-            variant={sort.field === 'start_date' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSort({ field: 'start_date', direction: 'desc' })}
-          >
-            {FILTER_LABELS.SORT_BY_START_DATE}
-          </Button>
-          <Button
-            variant={sort.field === 'end_date' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSort({ field: 'end_date', direction: 'desc' })}
-          >
-            {FILTER_LABELS.SORT_BY_END_DATE}
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {records.map(record => (
-          <BookCard key={record.reading_log.id} record={record} />
-        ))}
-      </div>
-
-      {(isLoading || isFetchingNextPage) && (
-        <div className="text-center py-8 text-muted-foreground">{MESSAGES.LOADING}</div>
-      )}
-
-      {!isLoading && records.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <p>{MESSAGES.NO_BOOKS_FOUND}</p>
-          <Link to="/books/new">
-            <Button variant="outline" className="mt-4">
-              {BUTTON_LABELS.ADD_FIRST_BOOK}
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      <div ref={observerTarget} className="h-10" />
+        <div ref={observerTarget} className="h-10" />
+      </main>
     </div>
   );
 }

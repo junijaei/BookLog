@@ -46,11 +46,11 @@ export const FIELD_LABELS = {
   RATING: '평점 (1-5)',
   START_DATE: '시작일',
   END_DATE: '종료일',
-  REVIEW: '서평',
+  REVIEW: '감상문',
   QUOTES: '인용구',
   ADD_NEW_QUOTE: '새 인용구 추가',
   QUOTE_TEXT: '인용구 텍스트',
-  PAGE_NUMBER: '페이지 번호',
+  PAGE_NUMBER: 'P.',
   PROGRESS: '진행률',
   READING_PERIOD: '독서 기간',
 } as const;
@@ -60,7 +60,7 @@ export const PLACEHOLDERS = {
   SEARCH: '제목이나 저자로 검색...',
   COVER_IMAGE_URL: 'https://example.com/cover.jpg',
   QUOTE_TEXT: '인용구 텍스트...',
-  PAGE_NUMBER: '페이지 번호',
+  PAGE_NUMBER: '페이지',
 } as const;
 
 // Messages
@@ -94,7 +94,7 @@ export const FILTER_LABELS = {
 
 // Misc
 export const MISC = {
-  PAGES_UNIT: 'P.',
+  PAGES_UNIT: '페이지',
   BOOK_DETAILS: '도서 정보',
   READING_LOG: '독서 기록',
   ADD_NEW_QUOTE: '새 인용구 추가',

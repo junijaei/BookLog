@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FormField } from '@/components/form-field';
+import { BookEditSkeleton } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -173,19 +174,34 @@ export function BookEditPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="text-center py-12">{MESSAGES.LOADING}</div>
+      <div className="min-h-screen">
+        <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b">
+          <div className="container mx-auto px-4 py-3 max-w-4xl">
+            <div className="flex justify-between items-center">
+              <Link to="/">
+                <Button variant="ghost" size="sm">
+                  ← {BUTTON_LABELS.CANCEL}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </header>
+        <main className="container mx-auto px-4 py-4 max-w-4xl">
+          <BookEditSkeleton />
+        </main>
       </div>
     );
   }
 
   if (!record) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="min-h-screen">
         <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">{MESSAGES.BOOK_NOT_FOUND}</p>
+          <p className="text-sm text-muted-foreground mb-4">{MESSAGES.BOOK_NOT_FOUND}</p>
           <Link to="/">
-            <Button variant="outline">{BUTTON_LABELS.BACK_TO_LIST}</Button>
+            <Button variant="outline" size="sm">
+              {BUTTON_LABELS.BACK_TO_LIST}
+            </Button>
           </Link>
         </div>
       </div>
@@ -193,153 +209,189 @@ export function BookEditPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex justify-between items-center mb-6">
-        <Link to={`/books/${id}`}>
-          <Button variant="outline" size="sm">
-            ← {BUTTON_LABELS.CANCEL}
-          </Button>
-        </Link>
-        <div className="flex gap-2">
-          <Button
-            variant="destructive"
-            onClick={() => setDeleteDialogOpen(true)}
-            disabled={deleteMutation.isPending}
-          >
-            {BUTTON_LABELS.DELETE}
-          </Button>
-          <Button
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting || deleteMutation.isPending}
-          >
-            {isSubmitting ? BUTTON_LABELS.SAVING : BUTTON_LABELS.SAVE}
-          </Button>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>{MISC.BOOK_DETAILS}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField label={FIELD_LABELS.TITLE} htmlFor="title">
-              <Input id="title" {...register('title')} />
-            </FormField>
-
-            <FormField label={FIELD_LABELS.AUTHOR} htmlFor="author">
-              <Input id="author" {...register('author')} />
-            </FormField>
-
-            <FormField label={FIELD_LABELS.COVER_IMAGE_URL} htmlFor="cover_image_url">
-              <Input id="cover_image_url" {...register('cover_image_url')} />
-            </FormField>
-
-            <FormField label={FIELD_LABELS.TOTAL_PAGES} htmlFor="total_pages">
-              <Input id="total_pages" type="number" {...register('total_pages')} />
-            </FormField>
-          </CardContent>
-        </Card>
-
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>{MISC.READING_LOG}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField label={FIELD_LABELS.STATUS} htmlFor="status">
-              <Select id="status" {...register('status')}>
-                {READING_STATUSES.map(status => (
-                  <option key={status} value={status}>
-                    {getReadingStatusLabel(status)}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-
-            <FormField label={FIELD_LABELS.CURRENT_PAGE} htmlFor="current_page">
-              <Input id="current_page" type="number" {...register('current_page')} />
-            </FormField>
-
-            <FormField label={FIELD_LABELS.RATING} htmlFor="rating">
-              <Input id="rating" type="number" min="1" max="5" {...register('rating')} />
-            </FormField>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField label={FIELD_LABELS.START_DATE} htmlFor="start_date">
-                <Input id="start_date" type="date" {...register('start_date')} />
-              </FormField>
-
-              <FormField label={FIELD_LABELS.END_DATE} htmlFor="end_date">
-                <Input id="end_date" type="date" {...register('end_date')} />
-              </FormField>
-            </div>
-
-            <FormField label={FIELD_LABELS.REVIEW} htmlFor="review">
-              <Textarea id="review" {...register('review')} rows={6} />
-            </FormField>
-          </CardContent>
-        </Card>
-      </form>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{FIELD_LABELS.QUOTES}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {quotes.map((quote, index) => (
-            <div key={quote.id ?? `new-${index}`} className="border rounded p-4 space-y-2">
-              <p className="text-foreground">"{quote.text}"</p>
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>
-                  {FIELD_LABELS.PAGE_NUMBER} {quote.page_number}
-                  {quote.isNew && (
-                    <span className="ml-2 text-blue-500">({MISC.WILL_BE_ADDED_ON_SAVE})</span>
-                  )}
-                </span>
-                <Button variant="ghost" size="sm" onClick={() => handleDeleteQuote(index)}>
-                  {BUTTON_LABELS.DELETE}
-                </Button>
-              </div>
-            </div>
-          ))}
-
-          <div className="border-t pt-4 space-y-2">
-            <FormField label={MISC.ADD_NEW_QUOTE} htmlFor="new_quote_text">
-              <Textarea
-                id="new_quote_text"
-                placeholder={PLACEHOLDERS.QUOTE_TEXT}
-                {...registerQuote('text')}
-                rows={3}
-              />
-            </FormField>
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b">
+        <div className="container mx-auto px-4 py-3 max-w-4xl">
+          <div className="flex justify-between items-center">
+            <Link to={`/books/${id}`}>
+              <Button variant="ghost" size="sm">
+                ← {BUTTON_LABELS.CANCEL}
+              </Button>
+            </Link>
             <div className="flex gap-2">
-              <Input
-                type="number"
-                placeholder={PLACEHOLDERS.PAGE_NUMBER}
-                {...registerQuote('page_number')}
-                className="w-32"
-              />
               <Button
-                type="button"
-                onClick={handleQuoteSubmit(onAddQuote)}
-                disabled={!newQuoteText || !newQuotePage}
+                variant="destructive"
+                size="sm"
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={deleteMutation.isPending}
               >
-                {BUTTON_LABELS.ADD}
+                {BUTTON_LABELS.DELETE}
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSubmit(onSubmit)}
+                disabled={isSubmitting || deleteMutation.isPending}
+              >
+                {isSubmitting ? BUTTON_LABELS.SAVING : BUTTON_LABELS.SAVE}
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-4 max-w-4xl">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Card className="mb-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{MISC.BOOK_DETAILS}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FormField label={FIELD_LABELS.TITLE} htmlFor="title">
+                <Input id="title" className="text-sm" {...register('title')} />
+              </FormField>
+
+              <FormField label={FIELD_LABELS.AUTHOR} htmlFor="author">
+                <Input id="author" className="text-sm" {...register('author')} />
+              </FormField>
+
+              <FormField label={FIELD_LABELS.COVER_IMAGE_URL} htmlFor="cover_image_url">
+                <Input id="cover_image_url" className="text-sm" {...register('cover_image_url')} />
+              </FormField>
+
+              <FormField label={FIELD_LABELS.TOTAL_PAGES} htmlFor="total_pages">
+                <Input
+                  id="total_pages"
+                  type="number"
+                  className="text-sm"
+                  {...register('total_pages')}
+                />
+              </FormField>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{MISC.READING_LOG}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <FormField label={FIELD_LABELS.STATUS} htmlFor="status">
+                  <Select id="status" className="text-sm" {...register('status')}>
+                    {READING_STATUSES.map(status => (
+                      <option key={status} value={status}>
+                        {getReadingStatusLabel(status)}
+                      </option>
+                    ))}
+                  </Select>
+                </FormField>
+
+                <FormField label={FIELD_LABELS.CURRENT_PAGE} htmlFor="current_page">
+                  <Input
+                    id="current_page"
+                    type="number"
+                    className="text-sm"
+                    {...register('current_page')}
+                  />
+                </FormField>
+
+                <FormField label={FIELD_LABELS.RATING} htmlFor="rating">
+                  <Input
+                    id="rating"
+                    type="number"
+                    min="1"
+                    max="5"
+                    className="text-sm"
+                    {...register('rating')}
+                  />
+                </FormField>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label={FIELD_LABELS.START_DATE} htmlFor="start_date">
+                  <Input
+                    id="start_date"
+                    type="date"
+                    className="text-sm"
+                    {...register('start_date')}
+                  />
+                </FormField>
+
+                <FormField label={FIELD_LABELS.END_DATE} htmlFor="end_date">
+                  <Input id="end_date" type="date" className="text-sm" {...register('end_date')} />
+                </FormField>
+              </div>
+
+              <FormField label={FIELD_LABELS.REVIEW} htmlFor="review">
+                <Textarea id="review" className="text-sm" {...register('review')} rows={5} />
+              </FormField>
+            </CardContent>
+          </Card>
+        </form>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">{FIELD_LABELS.QUOTES}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="border-t pt-3 space-y-2">
+              <FormField label={MISC.ADD_NEW_QUOTE} htmlFor="new_quote_text">
+                <Textarea
+                  id="new_quote_text"
+                  placeholder={PLACEHOLDERS.QUOTE_TEXT}
+                  className="text-sm"
+                  {...registerQuote('text')}
+                  rows={3}
+                />
+              </FormField>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder={PLACEHOLDERS.PAGE_NUMBER}
+                  className="w-24 text-sm"
+                  {...registerQuote('page_number')}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleQuoteSubmit(onAddQuote)}
+                  disabled={!newQuoteText || !newQuotePage}
+                >
+                  {BUTTON_LABELS.ADD}
+                </Button>
+              </div>
+            </div>
+            {quotes.map((quote, index) => (
+              <div key={quote.id ?? `new-${index}`} className="border rounded p-3 space-y-1.5">
+                <p className="text-sm whitespace-pre-wrap">"{quote.text}"</p>
+                <div className="flex justify-between items-center text-[10px] text-muted-foreground">
+                  <span>
+                    {FIELD_LABELS.PAGE_NUMBER} {quote.page_number}
+                    {quote.isNew && (
+                      <span className="ml-2 text-blue-500">({MISC.WILL_BE_ADDED_ON_SAVE})</span>
+                    )}
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteQuote(index)}>
+                    {BUTTON_LABELS.DELETE}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </main>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{MESSAGES.DELETE_CONFIRMATION_TITLE}</DialogTitle>
-            <DialogDescription>{MESSAGES.DELETE_CONFIRMATION_MESSAGE}</DialogDescription>
+            <DialogTitle className="text-base">{MESSAGES.DELETE_CONFIRMATION_TITLE}</DialogTitle>
+            <DialogDescription className="text-sm">
+              {MESSAGES.DELETE_CONFIRMATION_MESSAGE}
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setDeleteDialogOpen(false)}
               disabled={deleteMutation.isPending}
             >
@@ -347,6 +399,7 @@ export function BookEditPage() {
             </Button>
             <Button
               variant="destructive"
+              size="sm"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >
