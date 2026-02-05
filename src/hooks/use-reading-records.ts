@@ -44,24 +44,35 @@ export function useReadingRecord(id: string | undefined) {
   });
 }
 
-export function useCreateBook() {
+function useInvalidateReadingRecords() {
   const queryClient = useQueryClient();
+
+  return () => {
+    queryClient.resetQueries({
+      queryKey: queryKeys.readingRecords.lists(),
+    });
+  };
+}
+
+export function useCreateBook() {
+  const invalidateRecords = useInvalidateReadingRecords();
 
   return useMutation({
     mutationFn: (input: CreateBookInput) => createBook(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.readingRecords.all });
+      invalidateRecords();
     },
   });
 }
 
 export function useUpsertReadingRecord() {
   const queryClient = useQueryClient();
+  const invalidateRecords = useInvalidateReadingRecords();
 
   return useMutation({
     mutationFn: (payload: UpsertPayload) => upsertReadingRecord(payload),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.readingRecords.all });
+      invalidateRecords();
       if (variables.reading_log.id) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.readingRecords.detail(variables.reading_log.id),
@@ -73,21 +84,27 @@ export function useUpsertReadingRecord() {
 
 export function useDeleteReadingRecord() {
   const queryClient = useQueryClient();
+  const invalidateRecords = useInvalidateReadingRecords();
 
   return useMutation({
     mutationFn: (input: DeleteReadingRecordInput) => deleteReadingRecord(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.readingRecords.all });
+    onSuccess: (_, variables) => {
+      invalidateRecords();
+      queryClient.removeQueries({
+        queryKey: queryKeys.readingRecords.detail(variables.reading_log_id),
+      });
     },
   });
 }
 
 export function useCreateQuote() {
   const queryClient = useQueryClient();
+  const invalidateRecords = useInvalidateReadingRecords();
 
   return useMutation({
     mutationFn: (input: CreateQuoteInput) => createQuote(input),
     onSuccess: (_, variables) => {
+      invalidateRecords();
       queryClient.invalidateQueries({
         queryKey: queryKeys.readingRecords.detail(variables.reading_log_id),
       });
@@ -97,10 +114,12 @@ export function useCreateQuote() {
 
 export function useUpdateQuote(readingLogId: string) {
   const queryClient = useQueryClient();
+  const invalidateRecords = useInvalidateReadingRecords();
 
   return useMutation({
     mutationFn: (input: UpdateQuoteInput) => updateQuote(input),
     onSuccess: () => {
+      invalidateRecords();
       queryClient.invalidateQueries({
         queryKey: queryKeys.readingRecords.detail(readingLogId),
       });
@@ -110,10 +129,12 @@ export function useUpdateQuote(readingLogId: string) {
 
 export function useDeleteQuote(readingLogId: string) {
   const queryClient = useQueryClient();
+  const invalidateRecords = useInvalidateReadingRecords();
 
   return useMutation({
     mutationFn: (input: DeleteQuoteInput) => deleteQuote(input),
     onSuccess: () => {
+      invalidateRecords();
       queryClient.invalidateQueries({
         queryKey: queryKeys.readingRecords.detail(readingLogId),
       });
