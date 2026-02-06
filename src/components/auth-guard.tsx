@@ -4,10 +4,10 @@
  * Protects routes from unauthorized access.
  */
 
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/lib/auth-provider';
+import { useAuth } from '@/lib/auth/auth-provider';
 import { MESSAGES } from '@/lib/constants';
 import type { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 
 interface AuthGuardProps {
   children: ReactNode;
