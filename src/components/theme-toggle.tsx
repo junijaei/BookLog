@@ -1,17 +1,10 @@
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  // useEffect only runs on the client, so now we can safely show the UI
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  if (typeof window === 'undefined') {
     return (
       <Button variant="ghost" size="icon" disabled>
         <span className="sr-only">Loading theme...</span>

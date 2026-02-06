@@ -3,7 +3,13 @@ import { BookCardSkeleton } from '@/components/skeletons';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useReadingRecords } from '@/hooks';
 import {
   BUTTON_LABELS,
@@ -36,7 +42,7 @@ const STATUS_OPTIONS: { value: ReadingStatus | 'all'; label: string }[] = [
 export function BookListPage() {
   const [filters, setFilters] = useState<ReadingRecordFilters>({});
   const [sort, setSort] = useState<ReadingRecordSort>({
-    field: 'updated_at',
+    field: 'start_date',
     direction: 'desc',
   });
   const [showFilters, setShowFilters] = useState(false);
@@ -71,16 +77,16 @@ export function BookListPage() {
     setFilters(prev => ({ ...prev, search: e.target.value || undefined }));
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as ReadingStatus | 'all';
+  const handleStatusChange = (value: string) => {
+    const status = value as ReadingStatus | 'all';
     setFilters(prev => ({
       ...prev,
-      status: value === 'all' ? undefined : [value],
+      status: status === 'all' ? undefined : [status],
     }));
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSort({ field: e.target.value as SortField, direction: 'desc' });
+  const handleSortChange = (value: string) => {
+    setSort({ field: value as SortField, direction: 'desc' });
   };
 
   const hasActiveFilters = filters.search || filters.status;
@@ -117,23 +123,29 @@ export function BookListPage() {
                 className="text-sm"
               />
               <div className="flex gap-2">
-                <Select
-                  value={filters.status?.[0] || 'all'}
-                  onChange={handleStatusChange}
-                  className="flex-1 text-sm"
-                >
-                  {STATUS_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
+                <Select value={filters.status?.[0] || 'all'} onValueChange={handleStatusChange}>
+                  <SelectTrigger className="flex-1 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
-                <Select value={sort.field} onChange={handleSortChange} className="flex-1 text-sm">
-                  {SORT_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
+                <Select value={sort.field} onValueChange={handleSortChange}>
+                  <SelectTrigger className="flex-1 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             </div>

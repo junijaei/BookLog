@@ -1,10 +1,7 @@
-import { useForm } from 'react-hook-form';
-import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { FormField } from '@/components/form-field';
 import { BookEditSkeleton } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DateRangePicker, type DateRangeValue } from '@/components/ui/date-range-picker';
 import {
   Dialog,
   DialogContent,
@@ -13,8 +10,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useDeleteReadingRecord, useReadingRecord, useUpsertReadingRecord } from '@/hooks';
 import {
@@ -26,6 +30,9 @@ import {
   PLACEHOLDERS,
 } from '@/lib/constants';
 import type { BookEditFormData, LocalQuote, NewQuoteFormData, Quote, ReadingStatus } from '@/types';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const READING_STATUSES: ReadingStatus[] = ['want_to_read', 'reading', 'finished', 'abandoned'];
 
@@ -39,9 +46,11 @@ export function BookEditPage() {
   const deleteMutation = useDeleteReadingRecord();
 
   const {
-    register,
+    control,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { isSubmitting },
   } = useForm<BookEditFormData>({
     defaultValues: {
@@ -62,7 +71,7 @@ export function BookEditPage() {
   const [deletedQuoteIds, setDeletedQuoteIds] = useState<string[]>([]);
 
   const {
-    register: registerQuote,
+    control: controlQuote,
     handleSubmit: handleQuoteSubmit,
     reset: resetQuote,
     watch: watchQuote,
@@ -98,6 +107,8 @@ export function BookEditPage() {
       }))
     );
   }, [record, reset]);
+
+  useEffect(() => console.log(record), [record]);
 
   const onSubmit = async (data: BookEditFormData) => {
     if (!record || !id) return;
@@ -218,23 +229,13 @@ export function BookEditPage() {
                 ← {BUTTON_LABELS.CANCEL}
               </Button>
             </Link>
-            <div className="flex gap-2">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setDeleteDialogOpen(true)}
-                disabled={deleteMutation.isPending}
-              >
-                {BUTTON_LABELS.DELETE}
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSubmit(onSubmit)}
-                disabled={isSubmitting || deleteMutation.isPending}
-              >
-                {isSubmitting ? BUTTON_LABELS.SAVING : BUTTON_LABELS.SAVE}
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={handleSubmit(onSubmit)}
+              disabled={isSubmitting || deleteMutation.isPending}
+            >
+              {isSubmitting ? BUTTON_LABELS.SAVING : BUTTON_LABELS.SAVE}
+            </Button>
           </div>
         </div>
       </header>
@@ -246,26 +247,67 @@ export function BookEditPage() {
             <CardHeader className="pb-4">
               <CardTitle className="text-base">{MISC.BOOK_DETAILS}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label={FIELD_LABELS.TITLE} htmlFor="title">
-                  <Input id="title" {...register('title')} />
-                </FormField>
+            <CardContent>
+              <FieldGroup className="gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Controller
+                    name="title"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="title">{FIELD_LABELS.TITLE}</FieldLabel>
+                        <Input {...field} id="title" aria-invalid={fieldState.invalid} />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
 
-                <FormField label={FIELD_LABELS.AUTHOR} htmlFor="author">
-                  <Input id="author" {...register('author')} />
-                </FormField>
-              </div>
+                  <Controller
+                    name="author"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="author">{FIELD_LABELS.AUTHOR}</FieldLabel>
+                        <Input {...field} id="author" aria-invalid={fieldState.invalid} />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
+                </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label={FIELD_LABELS.COVER_IMAGE_URL} htmlFor="cover_image_url">
-                  <Input id="cover_image_url" {...register('cover_image_url')} />
-                </FormField>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Controller
+                    name="cover_image_url"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="cover_image_url">
+                          {FIELD_LABELS.COVER_IMAGE_URL}
+                        </FieldLabel>
+                        <Input {...field} id="cover_image_url" aria-invalid={fieldState.invalid} />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
 
-                <FormField label={FIELD_LABELS.TOTAL_PAGES} htmlFor="total_pages">
-                  <Input id="total_pages" type="number" {...register('total_pages')} />
-                </FormField>
-              </div>
+                  <Controller
+                    name="total_pages"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="total_pages">{FIELD_LABELS.TOTAL_PAGES}</FieldLabel>
+                        <Input
+                          {...field}
+                          id="total_pages"
+                          type="number"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
+                </div>
+              </FieldGroup>
             </CardContent>
           </Card>
 
@@ -274,121 +316,228 @@ export function BookEditPage() {
             <CardHeader className="pb-4">
               <CardTitle className="text-base">{MISC.READING_LOG}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5">
-              {/* Status & Progress row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <FormField label={FIELD_LABELS.STATUS} htmlFor="status">
-                  <Select id="status" {...register('status')}>
-                    {READING_STATUSES.map(status => (
-                      <option key={status} value={status}>
-                        {getReadingStatusLabel(status)}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
+            <CardContent>
+              <FieldGroup className="gap-5">
+                {/* Status & Progress row */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field, fieldState }) => {
+                      console.log(field);
+                      return (
+                        <Field data-invalid={fieldState.invalid}>
+                          <FieldLabel htmlFor="status">{FIELD_LABELS.STATUS}</FieldLabel>
+                          <Select
+                            name={field.name}
+                            value={field.value}
+                            onValueChange={value => value && field.onChange(value)}
+                          >
+                            <SelectTrigger id="status" aria-invalid={fieldState.invalid}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {READING_STATUSES.map(status => (
+                                <SelectItem key={status} value={status}>
+                                  {getReadingStatusLabel(status)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                        </Field>
+                      );
+                    }}
+                  />
 
-                <FormField label={FIELD_LABELS.CURRENT_PAGE} htmlFor="current_page">
-                  <Input id="current_page" type="number" {...register('current_page')} />
-                </FormField>
+                  <Controller
+                    name="current_page"
+                    control={control}
+                    render={({ field, fieldState }) => {
+                      console.log(field);
+                      return (
+                        <Field data-invalid={fieldState.invalid}>
+                          <FieldLabel htmlFor="current_page">
+                            {FIELD_LABELS.CURRENT_PAGE}
+                          </FieldLabel>
+                          <Input
+                            {...field}
+                            id="current_page"
+                            type="number"
+                            aria-invalid={fieldState.invalid}
+                          />
+                          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                        </Field>
+                      );
+                    }}
+                  />
 
-                <FormField label={FIELD_LABELS.RATING} htmlFor="rating">
-                  <Input id="rating" type="number" min="1" max="5" {...register('rating')} />
-                </FormField>
-              </div>
+                  <Controller
+                    name="rating"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="rating">{FIELD_LABELS.RATING}</FieldLabel>
+                        <Input
+                          {...field}
+                          id="rating"
+                          type="number"
+                          min="1"
+                          max="5"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
+                </div>
 
-              {/* Dates row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label={FIELD_LABELS.START_DATE} htmlFor="start_date">
-                  <Input id="start_date" type="date" {...register('start_date')} />
-                </FormField>
+                {/* Reading period */}
+                <Field>
+                  <FieldLabel htmlFor="reading_period">{FIELD_LABELS.READING_PERIOD}</FieldLabel>
+                  <DateRangePicker
+                    id="reading_period"
+                    value={{
+                      from: watch('start_date') || undefined,
+                      to: watch('end_date') || undefined,
+                    }}
+                    onChange={(value: DateRangeValue) => {
+                      setValue('start_date', value.from ?? '');
+                      setValue('end_date', value.to ?? '');
+                    }}
+                    placeholder="독서 기간 선택"
+                  />
+                </Field>
 
-                <FormField label={FIELD_LABELS.END_DATE} htmlFor="end_date">
-                  <Input id="end_date" type="date" {...register('end_date')} />
-                </FormField>
-              </div>
-
-              {/* Review - larger textarea with better line height */}
-              <FormField label={FIELD_LABELS.REVIEW} htmlFor="review">
-                <Textarea
-                  id="review"
-                  {...register('review')}
-                  rows={6}
-                  className="leading-relaxed"
+                {/* Review - larger textarea with better line height */}
+                <Controller
+                  name="review"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="review">{FIELD_LABELS.REVIEW}</FieldLabel>
+                      <Textarea
+                        {...field}
+                        id="review"
+                        rows={6}
+                        className="leading-relaxed"
+                        aria-invalid={fieldState.invalid}
+                      />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
                 />
-              </FormField>
+              </FieldGroup>
             </CardContent>
           </Card>
         </form>
 
         {/* SECTION 3: Quotes */}
-        <Card>
+        <Card className="mb-8">
           <CardHeader className="pb-4">
             <CardTitle className="text-base">{FIELD_LABELS.QUOTES}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-5">
-            {/* Add new quote form */}
-            <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-              <FormField label={MISC.ADD_NEW_QUOTE} htmlFor="new_quote_text">
-                <Textarea
-                  id="new_quote_text"
-                  placeholder={PLACEHOLDERS.QUOTE_TEXT}
-                  {...registerQuote('text')}
-                  rows={4}
-                  className="min-h-[120px] leading-relaxed"
+          <CardContent>
+            <FieldGroup className="gap-5">
+              {/* Add new quote form */}
+              <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                <Controller
+                  name="text"
+                  control={controlQuote}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="new_quote_text">{MISC.ADD_NEW_QUOTE}</FieldLabel>
+                      <Textarea
+                        {...field}
+                        id="new_quote_text"
+                        placeholder={PLACEHOLDERS.QUOTE_TEXT}
+                        rows={4}
+                        className="min-h-[120px] leading-relaxed"
+                        aria-invalid={fieldState.invalid}
+                      />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
                 />
-              </FormField>
-              <div className="flex gap-3 items-center">
-                <Input
-                  type="number"
-                  placeholder={PLACEHOLDERS.PAGE_NUMBER}
-                  className="w-28"
-                  {...registerQuote('page_number')}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleQuoteSubmit(onAddQuote)}
-                  disabled={!newQuoteText || !newQuotePage}
-                >
-                  {BUTTON_LABELS.ADD}
-                </Button>
-              </div>
-            </div>
-
-            {/* Existing quotes list */}
-            {quotes.length > 0 && (
-              <div className="space-y-4 pt-2">
-                <h4 className="text-sm font-medium text-muted-foreground">
-                  {quotes.length}개의 인용구
-                </h4>
-                {quotes.map((quote, index) => (
-                  <div
-                    key={quote.id ?? `new-${index}`}
-                    className="border-l-2 border-primary/20 pl-4 py-3 group"
+                <div className="flex gap-3 items-center">
+                  <Controller
+                    name="page_number"
+                    control={controlQuote}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        type="number"
+                        placeholder={PLACEHOLDERS.PAGE_NUMBER}
+                        className="w-28"
+                      />
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleQuoteSubmit(onAddQuote)}
+                    disabled={!newQuoteText || !newQuotePage}
                   >
-                    <p className="text-base leading-relaxed whitespace-pre-wrap">
-                      &ldquo;{quote.text}&rdquo;
-                    </p>
-                    <div className="flex justify-between items-center mt-3">
-                      <span className="text-xs text-muted-foreground">
-                        p.{quote.page_number}
-                        {quote.isNew && (
-                          <span className="ml-2 text-blue-500">({MISC.WILL_BE_ADDED_ON_SAVE})</span>
-                        )}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteQuote(index)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        {BUTTON_LABELS.DELETE}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                    {BUTTON_LABELS.ADD}
+                  </Button>
+                </div>
               </div>
-            )}
+
+              {/* Existing quotes list */}
+              {quotes.length > 0 && (
+                <div className="space-y-4 pt-2">
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    {quotes.length}개의 인용구
+                  </h4>
+                  {quotes.map((quote, index) => (
+                    <div
+                      key={quote.id ?? `new-${index}`}
+                      className="border-l-2 border-primary/20 pl-4 py-3 group"
+                    >
+                      <p className="text-base leading-relaxed whitespace-pre-wrap">
+                        &ldquo;{quote.text}&rdquo;
+                      </p>
+                      <div className="flex justify-between items-center mt-3">
+                        <span className="text-xs text-muted-foreground">
+                          p.{quote.page_number}
+                          {quote.isNew && (
+                            <span className="ml-2 text-blue-500">
+                              ({MISC.WILL_BE_ADDED_ON_SAVE})
+                            </span>
+                          )}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteQuote(index)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          {BUTTON_LABELS.DELETE}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </FieldGroup>
+          </CardContent>
+        </Card>
+        <Card className="bg-muted/30">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">{MESSAGES.DELETE_CONFIRMATION_TITLE}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground pb-4 text-sm">
+              {MESSAGES.DELETE_CONFIRMATION_CONTENT}
+            </p>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={deleteMutation.isPending}
+            >
+              {BUTTON_LABELS.DELETE}
+            </Button>
           </CardContent>
         </Card>
       </main>

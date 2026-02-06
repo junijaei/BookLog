@@ -53,6 +53,7 @@ export const FIELD_LABELS = {
   PAGE_NUMBER: 'P.',
   PROGRESS: '진행률',
   READING_PERIOD: '독서 기간',
+  DELETE_RECORD: '독서 기록 삭제'
 } as const;
 
 // Placeholders
@@ -74,9 +75,9 @@ export const MESSAGES = {
   FAILED_TO_CREATE: '생성에 실패했습니다',
   FAILED_TO_LOAD: '불러오기에 실패했습니다',
   DELETE_CONFIRMATION_TITLE: '독서 기록 삭제',
+  DELETE_CONFIRMATION_CONTENT: '독서 기록 삭제하기. 이 작업은 되돌릴 수 없습니다.',
   DELETE_CONFIRMATION_MESSAGE: '이 독서 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
   DELETE_BOOK_WARNING: '다른 독서 기록이 없어 도서도 함께 삭제됩니다.',
-  DELETE_NOT_IMPLEMENTED: '삭제 기능은 아직 구현되지 않았습니다',
   DELETING: '삭제 중...',
   NO_COVER: '표지 없음',
   NO_QUOTES: '등록된 인용구가 없습니다.',

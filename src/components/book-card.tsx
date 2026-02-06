@@ -51,7 +51,7 @@ export function BookCard({ record }: BookCardProps) {
         {/* <CardContent className="flex-1 py-0 px-6"></CardContent> */}
 
         {/* FOOTER ZONE: Metadata (de-emphasized) */}
-        <CardFooter className="pt-2 pb-4 px-6 flex justify-between items-center border-t border-border/50 mt-auto">
+        <CardFooter className="pt-2 sm:pt-2 sm:pb-4 sm:px-6 pb-4 px-6 flex justify-between items-center border-t border-border/50 mt-auto">
           <span className="text-xs text-muted-foreground/70">{dateRange || '\u00A0'}</span>
           {reading_log.rating && (
             <span className="text-xs text-amber-500/70">

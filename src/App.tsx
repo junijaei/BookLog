@@ -1,14 +1,14 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './lib/theme-provider';
-import { AuthProvider } from './lib/auth-provider';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthGuard } from './components/auth-guard';
-import { LoginPage } from './pages/login';
-import { BookListPage } from './pages/book-list';
+import { AuthProvider } from './lib/auth/auth-provider';
+import { ThemeProvider } from './lib/theme-provider';
 import { BookDetailPage } from './pages/book-detail';
 import { BookEditPage } from './pages/book-edit';
+import { BookListPage } from './pages/book-list';
 import { BookNewPage } from './pages/book-new';
-import { NotFoundPage } from './pages/not-found';
 import { ErrorPage } from './pages/error';
+import { LoginPage } from './pages/login';
+import { NotFoundPage } from './pages/not-found';
 
 function App() {
   return (

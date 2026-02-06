@@ -1,8 +1,5 @@
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
 import { BookCover } from '@/components/book-cover';
 import { DateRangeDisplay } from '@/components/date-range-display';
-import { FormField } from '@/components/form-field';
 import { BookDetailSkeleton } from '@/components/skeletons';
 import { StatusBadge } from '@/components/status-badge';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -15,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateQuote, useDeleteQuote, useReadingRecord, useUpdateQuote } from '@/hooks';
@@ -27,6 +25,8 @@ import {
   renderRatingStars,
 } from '@/lib/constants';
 import type { Quote } from '@/types';
+import { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 
 export function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -266,7 +266,7 @@ export function BookDetailPage() {
               {quotes.map(quote => (
                 <article
                   key={quote.id}
-                  className="group border-l-2 border-primary/20 pl-6 py-4 hover:border-primary/40 transition-colors"
+                  className="group border-l-2 border-primary/20 pl-6 py-4 pr-8 sm:pr-0 hover:border-primary/40 transition-colors"
                 >
                   <blockquote className="quote-text whitespace-pre-wrap">
                     &ldquo;{quote.text}&rdquo;
@@ -310,7 +310,8 @@ export function BookDetailPage() {
             <DialogTitle className="text-base">{MISC.EDIT_QUOTE}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-3">
-            <FormField label={FIELD_LABELS.QUOTE_TEXT} htmlFor="edit-quote-text">
+            <Field>
+              <FieldLabel htmlFor="edit-quote-text">{FIELD_LABELS.QUOTE_TEXT}</FieldLabel>
               <Textarea
                 id="edit-quote-text"
                 value={editQuoteText}
@@ -318,8 +319,9 @@ export function BookDetailPage() {
                 rows={4}
                 className="text-sm"
               />
-            </FormField>
-            <FormField label={FIELD_LABELS.PAGE_NUMBER} htmlFor="edit-quote-page">
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="edit-quote-page">{FIELD_LABELS.PAGE_NUMBER}</FieldLabel>
               <Input
                 id="edit-quote-page"
                 type="number"
@@ -327,7 +329,7 @@ export function BookDetailPage() {
                 onChange={e => setEditQuotePage(e.target.value)}
                 className="text-sm"
               />
-            </FormField>
+            </Field>
           </div>
           <DialogFooter>
             <Button
