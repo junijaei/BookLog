@@ -1,15 +1,9 @@
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader } from './ui/card';
-import { StatusBadge } from './status-badge';
-import { BookCover } from './book-cover';
+import { formatDateRange, renderRatingStars } from '@/lib/constants';
 import type { ReadingRecord } from '@/types';
-import {
-  formatDateRange,
-  formatPageProgress,
-  formatPercentage,
-  renderRatingStars,
-  FIELD_LABELS,
-} from '@/lib/constants';
+import { Link } from 'react-router-dom';
+import { BookCover } from './book-cover';
+import { StatusBadge } from './status-badge';
+import { Card, CardFooter, CardHeader } from './ui/card';
 
 interface BookCardProps {
   record: ReadingRecord;
@@ -27,44 +21,44 @@ export function BookCard({ record }: BookCardProps) {
 
   return (
     <Link to={`/books/${reading_log.id}`} className="block">
-      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-        <CardHeader className="pb-3">
+      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
+        {/* HEADER ZONE: Book info + Status */}
+        <CardHeader className="pb-2">
           <div className="flex gap-3">
             <BookCover url={book.cover_image_url} alt={book.title} size="sm" />
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm truncate">{book.title}</h3>
-              <p className="text-xs text-muted-foreground truncate">{book.author}</p>
-              <div className="mt-1.5 flex items-center gap-2">
+              <h3 className="font-semibold text-base leading-tight line-clamp-2">{book.title}</h3>
+              <p className="text-sm text-muted-foreground mt-0.5 truncate">{book.author}</p>
+              <div className="mt-2">
                 <StatusBadge status={reading_log.status} />
-                {reading_log.rating && (
-                  <span className="text-xs text-amber-500">
-                    {renderRatingStars(reading_log.rating)}
-                  </span>
-                )}
               </div>
+              {progress !== null && (
+                <div className="py-3">
+                  <div className="w-full bg-secondary rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full transition-all"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1.5 text-right">{progress}%</p>
+                </div>
+              )}
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 space-y-1.5">
-          {progress !== null && book.total_pages && reading_log.current_page && (
-            <div>
-              <div className="flex justify-between text-[10px] text-muted-foreground mb-0.5">
-                <span>{FIELD_LABELS.PROGRESS}</span>
-                <span>
-                  {formatPageProgress(reading_log.current_page, book.total_pages)} (
-                  {formatPercentage(reading_log.current_page, book.total_pages)})
-                </span>
-              </div>
-              <div className="w-full bg-secondary rounded-full h-1.5">
-                <div
-                  className="bg-primary h-1.5 rounded-full transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
+
+        {/* BODY ZONE: Progress indicator (contextual) */}
+        {/* <CardContent className="flex-1 py-0 px-6"></CardContent> */}
+
+        {/* FOOTER ZONE: Metadata (de-emphasized) */}
+        <CardFooter className="pt-2 pb-4 px-6 flex justify-between items-center border-t border-border/50 mt-auto">
+          <span className="text-xs text-muted-foreground/70">{dateRange || '\u00A0'}</span>
+          {reading_log.rating && (
+            <span className="text-xs text-amber-500/70">
+              {renderRatingStars(reading_log.rating)}
+            </span>
           )}
-          {dateRange && <p className="text-[10px] text-muted-foreground">{dateRange}</p>}
-        </CardContent>
+        </CardFooter>
       </Card>
     </Link>
   );

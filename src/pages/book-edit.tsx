@@ -239,44 +239,46 @@ export function BookEditPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-4 max-w-4xl">
+      <main className="container mx-auto px-4 py-6 max-w-4xl">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Card className="mb-4">
-            <CardHeader className="pb-3">
+          {/* SECTION 1: Book Information */}
+          <Card className="mb-8">
+            <CardHeader className="pb-4">
               <CardTitle className="text-base">{MISC.BOOK_DETAILS}</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <FormField label={FIELD_LABELS.TITLE} htmlFor="title">
-                <Input id="title" className="text-sm" {...register('title')} />
-              </FormField>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField label={FIELD_LABELS.TITLE} htmlFor="title">
+                  <Input id="title" {...register('title')} />
+                </FormField>
 
-              <FormField label={FIELD_LABELS.AUTHOR} htmlFor="author">
-                <Input id="author" className="text-sm" {...register('author')} />
-              </FormField>
+                <FormField label={FIELD_LABELS.AUTHOR} htmlFor="author">
+                  <Input id="author" {...register('author')} />
+                </FormField>
+              </div>
 
-              <FormField label={FIELD_LABELS.COVER_IMAGE_URL} htmlFor="cover_image_url">
-                <Input id="cover_image_url" className="text-sm" {...register('cover_image_url')} />
-              </FormField>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField label={FIELD_LABELS.COVER_IMAGE_URL} htmlFor="cover_image_url">
+                  <Input id="cover_image_url" {...register('cover_image_url')} />
+                </FormField>
 
-              <FormField label={FIELD_LABELS.TOTAL_PAGES} htmlFor="total_pages">
-                <Input
-                  id="total_pages"
-                  type="number"
-                  className="text-sm"
-                  {...register('total_pages')}
-                />
-              </FormField>
+                <FormField label={FIELD_LABELS.TOTAL_PAGES} htmlFor="total_pages">
+                  <Input id="total_pages" type="number" {...register('total_pages')} />
+                </FormField>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="mb-4">
-            <CardHeader className="pb-3">
+          {/* SECTION 2: Reading Record */}
+          <Card className="mb-8">
+            <CardHeader className="pb-4">
               <CardTitle className="text-base">{MISC.READING_LOG}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <CardContent className="space-y-5">
+              {/* Status & Progress row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <FormField label={FIELD_LABELS.STATUS} htmlFor="status">
-                  <Select id="status" className="text-sm" {...register('status')}>
+                  <Select id="status" {...register('status')}>
                     {READING_STATUSES.map(status => (
                       <option key={status} value={status}>
                         {getReadingStatusLabel(status)}
@@ -286,68 +288,60 @@ export function BookEditPage() {
                 </FormField>
 
                 <FormField label={FIELD_LABELS.CURRENT_PAGE} htmlFor="current_page">
-                  <Input
-                    id="current_page"
-                    type="number"
-                    className="text-sm"
-                    {...register('current_page')}
-                  />
+                  <Input id="current_page" type="number" {...register('current_page')} />
                 </FormField>
 
                 <FormField label={FIELD_LABELS.RATING} htmlFor="rating">
-                  <Input
-                    id="rating"
-                    type="number"
-                    min="1"
-                    max="5"
-                    className="text-sm"
-                    {...register('rating')}
-                  />
+                  <Input id="rating" type="number" min="1" max="5" {...register('rating')} />
                 </FormField>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* Dates row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField label={FIELD_LABELS.START_DATE} htmlFor="start_date">
-                  <Input
-                    id="start_date"
-                    type="date"
-                    className="text-sm"
-                    {...register('start_date')}
-                  />
+                  <Input id="start_date" type="date" {...register('start_date')} />
                 </FormField>
 
                 <FormField label={FIELD_LABELS.END_DATE} htmlFor="end_date">
-                  <Input id="end_date" type="date" className="text-sm" {...register('end_date')} />
+                  <Input id="end_date" type="date" {...register('end_date')} />
                 </FormField>
               </div>
 
+              {/* Review - larger textarea with better line height */}
               <FormField label={FIELD_LABELS.REVIEW} htmlFor="review">
-                <Textarea id="review" className="text-sm" {...register('review')} rows={5} />
+                <Textarea
+                  id="review"
+                  {...register('review')}
+                  rows={6}
+                  className="leading-relaxed"
+                />
               </FormField>
             </CardContent>
           </Card>
         </form>
 
+        {/* SECTION 3: Quotes */}
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-base">{FIELD_LABELS.QUOTES}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="border-t pt-3 space-y-2">
+          <CardContent className="space-y-5">
+            {/* Add new quote form */}
+            <div className="bg-muted/30 rounded-lg p-4 space-y-3">
               <FormField label={MISC.ADD_NEW_QUOTE} htmlFor="new_quote_text">
                 <Textarea
                   id="new_quote_text"
                   placeholder={PLACEHOLDERS.QUOTE_TEXT}
-                  className="text-sm"
                   {...registerQuote('text')}
-                  rows={3}
+                  rows={4}
+                  className="min-h-[120px] leading-relaxed"
                 />
               </FormField>
-              <div className="flex gap-2">
+              <div className="flex gap-3 items-center">
                 <Input
                   type="number"
                   placeholder={PLACEHOLDERS.PAGE_NUMBER}
-                  className="w-24 text-sm"
+                  className="w-28"
                   {...registerQuote('page_number')}
                 />
                 <Button
@@ -360,22 +354,41 @@ export function BookEditPage() {
                 </Button>
               </div>
             </div>
-            {quotes.map((quote, index) => (
-              <div key={quote.id ?? `new-${index}`} className="border rounded p-3 space-y-1.5">
-                <p className="text-sm whitespace-pre-wrap">"{quote.text}"</p>
-                <div className="flex justify-between items-center text-[10px] text-muted-foreground">
-                  <span>
-                    {FIELD_LABELS.PAGE_NUMBER} {quote.page_number}
-                    {quote.isNew && (
-                      <span className="ml-2 text-blue-500">({MISC.WILL_BE_ADDED_ON_SAVE})</span>
-                    )}
-                  </span>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeleteQuote(index)}>
-                    {BUTTON_LABELS.DELETE}
-                  </Button>
-                </div>
+
+            {/* Existing quotes list */}
+            {quotes.length > 0 && (
+              <div className="space-y-4 pt-2">
+                <h4 className="text-sm font-medium text-muted-foreground">
+                  {quotes.length}개의 인용구
+                </h4>
+                {quotes.map((quote, index) => (
+                  <div
+                    key={quote.id ?? `new-${index}`}
+                    className="border-l-2 border-primary/20 pl-4 py-3 group"
+                  >
+                    <p className="text-base leading-relaxed whitespace-pre-wrap">
+                      &ldquo;{quote.text}&rdquo;
+                    </p>
+                    <div className="flex justify-between items-center mt-3">
+                      <span className="text-xs text-muted-foreground">
+                        p.{quote.page_number}
+                        {quote.isNew && (
+                          <span className="ml-2 text-blue-500">({MISC.WILL_BE_ADDED_ON_SAVE})</span>
+                        )}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteQuote(index)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        {BUTTON_LABELS.DELETE}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
       </main>

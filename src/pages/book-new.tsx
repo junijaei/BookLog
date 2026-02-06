@@ -67,69 +67,64 @@ export function BookNewPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-4 max-w-2xl">
+      <main className="container mx-auto px-4 py-6 max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-4">
               <CardTitle className="text-base">{MISC.BOOK_DETAILS}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <FormField
-                label={FIELD_LABELS.TITLE}
-                required
-                htmlFor="title"
-                error={errors.title?.message}
-              >
-                <Input
-                  id="title"
-                  className="text-sm"
-                  {...register('title', { required: MESSAGES.TITLE_AUTHOR_REQUIRED })}
-                />
-              </FormField>
-
-              <FormField
-                label={FIELD_LABELS.AUTHOR}
-                required
-                htmlFor="author"
-                error={errors.author?.message}
-              >
-                <Input
-                  id="author"
-                  className="text-sm"
-                  {...register('author', { required: MESSAGES.TITLE_AUTHOR_REQUIRED })}
-                />
-              </FormField>
-
-              <FormField label={FIELD_LABELS.COVER_IMAGE_URL} htmlFor="cover_image_url">
-                <Input
-                  id="cover_image_url"
-                  type="url"
-                  placeholder={PLACEHOLDERS.COVER_IMAGE_URL}
-                  className="text-sm"
-                  {...register('cover_image_url')}
-                />
-              </FormField>
-
-              <FormField label={FIELD_LABELS.TOTAL_PAGES} htmlFor="total_pages">
-                <Input
-                  id="total_pages"
-                  type="number"
-                  min="1"
-                  className="text-sm"
-                  {...register('total_pages', {
-                    validate: value =>
-                      !value || parseInt(value) > 0 || '페이지 수는 1 이상이어야 합니다',
-                  })}
-                />
-              </FormField>
-
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="w-full"
-                  disabled={createBookMutation.isPending}
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  label={FIELD_LABELS.TITLE}
+                  required
+                  htmlFor="title"
+                  error={errors.title?.message}
                 >
+                  <Input
+                    id="title"
+                    {...register('title', { required: MESSAGES.TITLE_AUTHOR_REQUIRED })}
+                  />
+                </FormField>
+
+                <FormField
+                  label={FIELD_LABELS.AUTHOR}
+                  required
+                  htmlFor="author"
+                  error={errors.author?.message}
+                >
+                  <Input
+                    id="author"
+                    {...register('author', { required: MESSAGES.TITLE_AUTHOR_REQUIRED })}
+                  />
+                </FormField>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField label={FIELD_LABELS.COVER_IMAGE_URL} htmlFor="cover_image_url">
+                  <Input
+                    id="cover_image_url"
+                    type="url"
+                    placeholder={PLACEHOLDERS.COVER_IMAGE_URL}
+                    {...register('cover_image_url')}
+                  />
+                </FormField>
+
+                <FormField label={FIELD_LABELS.TOTAL_PAGES} htmlFor="total_pages">
+                  <Input
+                    id="total_pages"
+                    type="number"
+                    min="1"
+                    {...register('total_pages', {
+                      validate: value =>
+                        !value || parseInt(value) > 0 || '페이지 수는 1 이상이어야 합니다',
+                    })}
+                  />
+                </FormField>
+              </div>
+
+              <div className="pt-4">
+                <Button type="submit" className="w-full" disabled={createBookMutation.isPending}>
                   {createBookMutation.isPending ? BUTTON_LABELS.CREATING : BUTTON_LABELS.CREATE}
                 </Button>
               </div>

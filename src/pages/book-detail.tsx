@@ -3,13 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import { BookCover } from '@/components/book-cover';
 import { DateRangeDisplay } from '@/components/date-range-display';
 import { FormField } from '@/components/form-field';
-import { ProgressBar } from '@/components/progress-bar';
-import { RatingDisplay } from '@/components/rating-display';
 import { BookDetailSkeleton } from '@/components/skeletons';
 import { StatusBadge } from '@/components/status-badge';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +18,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateQuote, useDeleteQuote, useReadingRecord, useUpdateQuote } from '@/hooks';
-import { BUTTON_LABELS, FIELD_LABELS, MESSAGES, MISC, PLACEHOLDERS } from '@/lib/constants';
+import {
+  BUTTON_LABELS,
+  FIELD_LABELS,
+  MESSAGES,
+  MISC,
+  PLACEHOLDERS,
+  renderRatingStars,
+} from '@/lib/constants';
 import type { Quote } from '@/types';
 
 export function BookDetailPage() {
@@ -166,123 +170,138 @@ export function BookDetailPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-4 max-w-4xl">
-        <Card className="mb-4">
-          <CardHeader className="pb-3">
-            <div className="flex gap-4">
-              <BookCover url={book.cover_image_url} alt={book.title} size="md" />
-              <div className="flex-1">
-                <CardTitle className="text-lg mb-1">{book.title}</CardTitle>
-                <p className="text-sm text-muted-foreground mb-3">{book.author}</p>
+      <main className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* COMPACT BOOK HEADER - acts as context, not primary content */}
+        <div className="bg-muted/30 rounded-lg p-4 mb-8">
+          <div className="flex gap-4">
+            <BookCover url={book.cover_image_url} alt={book.title} size="sm" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h1 className="font-semibold text-lg leading-tight line-clamp-2">{book.title}</h1>
+                  <p className="text-sm text-muted-foreground mt-0.5">{book.author}</p>
+                </div>
                 <StatusBadge status={reading_log.status} />
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <ProgressBar
-              currentPage={reading_log.current_page}
-              totalPages={book.total_pages}
-              showLabel={true}
-            />
 
-            {reading_log.rating && <RatingDisplay rating={reading_log.rating} />}
-
-            <DateRangeDisplay startDate={reading_log.start_date} endDate={reading_log.end_date} />
-
-            {reading_log.review && (
-              <div>
-                <h3 className="font-medium text-xs mb-1">{FIELD_LABELS.REVIEW}</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {reading_log.review}
-                </p>
+              {/* Inline metadata row */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
+                {book.total_pages && reading_log.current_page && (
+                  <span>
+                    {reading_log.current_page}/{book.total_pages}p (
+                    {Math.round((reading_log.current_page / book.total_pages) * 100)}%)
+                  </span>
+                )}
+                {reading_log.rating && (
+                  <span className="text-amber-500">{renderRatingStars(reading_log.rating)}</span>
+                )}
+                <DateRangeDisplay
+                  startDate={reading_log.start_date}
+                  endDate={reading_log.end_date}
+                  variant="inline"
+                />
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-base">
-                {FIELD_LABELS.QUOTES} ({quotes.length})
-              </CardTitle>
-              <Button variant="outline" size="sm" onClick={() => setShowAddQuote(!showAddQuote)}>
-                {showAddQuote ? BUTTON_LABELS.CANCEL : BUTTON_LABELS.ADD_QUOTE}
-              </Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            {showAddQuote && (
-              <div className="mb-4 p-3 border rounded-lg bg-muted/30">
-                <h4 className="font-medium text-sm mb-2">{MISC.ADD_NEW_QUOTE}</h4>
-                <div className="space-y-2">
-                  <Textarea
-                    placeholder={PLACEHOLDERS.QUOTE_TEXT}
-                    value={newQuoteText}
-                    onChange={e => setNewQuoteText(e.target.value)}
-                    rows={3}
-                    className="text-sm"
+          </div>
+
+          {/* Review section - collapsed by default feel */}
+          {reading_log.review && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {reading_log.review}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* QUOTES SECTION - Primary content */}
+        <section>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-semibold">
+              {FIELD_LABELS.QUOTES}
+              <span className="text-muted-foreground font-normal ml-2">({quotes.length})</span>
+            </h2>
+            <Button variant="outline" size="sm" onClick={() => setShowAddQuote(!showAddQuote)}>
+              {showAddQuote ? BUTTON_LABELS.CANCEL : BUTTON_LABELS.ADD_QUOTE}
+            </Button>
+          </div>
+
+          {/* Add quote form */}
+          {showAddQuote && (
+            <div className="mb-8 p-4 border rounded-lg bg-muted/20">
+              <h4 className="font-medium text-sm mb-3">{MISC.ADD_NEW_QUOTE}</h4>
+              <div className="space-y-3">
+                <Textarea
+                  placeholder={PLACEHOLDERS.QUOTE_TEXT}
+                  value={newQuoteText}
+                  onChange={e => setNewQuoteText(e.target.value)}
+                  rows={4}
+                  className="text-base leading-relaxed"
+                />
+                <div className="flex gap-2 items-center">
+                  <Input
+                    type="number"
+                    placeholder={PLACEHOLDERS.PAGE_NUMBER}
+                    value={newQuotePage}
+                    onChange={e => setNewQuotePage(e.target.value)}
+                    className="w-28"
                   />
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder={PLACEHOLDERS.PAGE_NUMBER}
-                      value={newQuotePage}
-                      onChange={e => setNewQuotePage(e.target.value)}
-                      className="w-24 text-sm"
-                    />
-                    <Button
-                      size="sm"
-                      onClick={handleAddQuote}
-                      disabled={
-                        !newQuoteText.trim() || !newQuotePage || createQuoteMutation.isPending
-                      }
-                    >
-                      {createQuoteMutation.isPending ? MESSAGES.LOADING : BUTTON_LABELS.ADD}
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    onClick={handleAddQuote}
+                    disabled={
+                      !newQuoteText.trim() || !newQuotePage || createQuoteMutation.isPending
+                    }
+                  >
+                    {createQuoteMutation.isPending ? MESSAGES.LOADING : BUTTON_LABELS.ADD}
+                  </Button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {quotes.length > 0 ? (
-              <div className="space-y-3">
-                {quotes.map(quote => (
-                  <div key={quote.id} className="border-l-4 border-primary/30 pl-3 py-1.5 group">
-                    <p className="text-sm mb-1.5 whitespace-pre-wrap">&ldquo;{quote.text}&rdquo;</p>
-                    <div className="flex justify-between items-center">
-                      <div className="flex gap-3 text-[10px] text-muted-foreground">
-                        <span>
-                          {FIELD_LABELS.PAGE_NUMBER} {quote.page_number}
-                        </span>
-                        {quote.noted_at && <span>{quote.noted_at}</span>}
-                      </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="sm" onClick={() => openEditDialog(quote)}>
-                          {BUTTON_LABELS.EDIT}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDeleteDialog(quote)}
-                          disabled={deleteQuoteMutation.isPending}
-                        >
-                          {BUTTON_LABELS.DELETE}
-                        </Button>
-                      </div>
+          {/* Quote list - optimized for reading */}
+          {quotes.length > 0 ? (
+            <div className="space-y-6">
+              {quotes.map(quote => (
+                <article
+                  key={quote.id}
+                  className="group border-l-2 border-primary/20 pl-6 py-4 hover:border-primary/40 transition-colors"
+                >
+                  <blockquote className="quote-text whitespace-pre-wrap">
+                    &ldquo;{quote.text}&rdquo;
+                  </blockquote>
+                  <div className="flex justify-between items-center mt-4">
+                    <span className="quote-meta">
+                      p.{quote.page_number}
+                      {quote.noted_at && <span className="mx-2">·</span>}
+                      {quote.noted_at}
+                    </span>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="sm" onClick={() => openEditDialog(quote)}>
+                        {BUTTON_LABELS.EDIT}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openDeleteDialog(quote)}
+                        disabled={deleteQuoteMutation.isPending}
+                      >
+                        {BUTTON_LABELS.DELETE}
+                      </Button>
                     </div>
                   </div>
-                ))}
+                </article>
+              ))}
+            </div>
+          ) : (
+            !showAddQuote && (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>{MESSAGES.NO_QUOTES}</p>
               </div>
-            ) : (
-              !showAddQuote && (
-                <p className="text-center text-sm text-muted-foreground py-4">
-                  {MESSAGES.NO_QUOTES}
-                </p>
-              )
-            )}
-          </CardContent>
-        </Card>
+            )
+          )}
+        </section>
       </main>
 
       <Dialog open={!!editingQuote} onOpenChange={open => !open && setEditingQuote(null)}>
