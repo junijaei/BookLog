@@ -89,6 +89,7 @@ export const PLACEHOLDERS = {
   BIO: '자기소개를 입력하세요',
   AVATAR_URL: 'https://example.com/avatar.png',
   USER_ID: '사용자 ID를 입력하세요',
+  SEARCH_NICKNAME: '닉네임으로 검색...',
 } as const;
 
 // Messages
@@ -126,6 +127,8 @@ export const MESSAGES = {
   BLOCK_CONFIRMATION: '이 사용자를 차단하시겠습니까? 차단하면 친구 관계가 해제됩니다.',
   NO_FEED_BOOKS: '피드에 표시할 도서가 없습니다.',
   NO_EDIT_PERMISSION: '본인의 독서 기록만 편집할 수 있습니다.',
+  NO_SEARCH_RESULTS: '검색 결과가 없습니다.',
+  SEARCH_MIN_LENGTH: '2자 이상 입력하세요.',
 } as const;
 
 // Filter Labels

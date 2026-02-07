@@ -21,6 +21,7 @@ export type {
   FriendListItem,
   ReceivedRequestItem,
   SentRequestItem,
+  PublicProfile,
 } from './entities';
 
 // API types

@@ -29,7 +29,7 @@ export {
 export { createQuote, updateQuote, deleteQuote } from './quotes';
 
 // Profiles
-export { getProfile, updateProfile } from './profiles';
+export { getProfile, updateProfile, getPublicProfile, searchUsers } from './profiles';
 
 // Friends
 export {

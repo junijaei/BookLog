@@ -18,6 +18,8 @@ export const queryKeys = {
   },
   profile: {
     all: ['profile'] as const,
+    public: (userId: string) => ['profile', 'public', userId] as const,
+    search: (term: string) => ['profile', 'search', term] as const,
   },
   friends: {
     all: ['friends'] as const,

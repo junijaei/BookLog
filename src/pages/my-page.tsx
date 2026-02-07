@@ -22,6 +22,7 @@ import {
   useProfile,
   useReceivedRequests,
   useRejectFriendRequest,
+  useSearchUsers,
   useSendFriendRequest,
   useSentRequests,
   useUpdateProfile,
@@ -35,8 +36,8 @@ import {
   PLACEHOLDERS,
 } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { UpdateProfilePayload } from '@/types';
-import { useState } from 'react';
+import type { PublicProfile, UpdateProfilePayload } from '@/types';
+import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 type Tab = 'profile' | 'friends' | 'requests';
@@ -294,13 +295,43 @@ function FriendsSection() {
 
   const sendRequestMutation = useSendFriendRequest();
   const [showAddFriend, setShowAddFriend] = useState(false);
-  const [targetUserId, setTargetUserId] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
+  const [selectedUser, setSelectedUser] = useState<PublicProfile | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const { data: searchResults, isLoading: isSearching } = useSearchUsers(debouncedTerm);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedTerm(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowResults(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelectUser = (user: PublicProfile) => {
+    setSelectedUser(user);
+    setSearchTerm(user.nickname);
+    setShowResults(false);
+  };
 
   const handleSendRequest = async () => {
-    if (!targetUserId.trim()) return;
+    if (!selectedUser) return;
     try {
-      await sendRequestMutation.mutateAsync(targetUserId.trim());
-      setTargetUserId('');
+      await sendRequestMutation.mutateAsync(selectedUser.id);
+      setSearchTerm('');
+      setSelectedUser(null);
       setShowAddFriend(false);
       alert(MESSAGES.FRIEND_REQUEST_SENT);
     } catch (error) {
@@ -348,20 +379,78 @@ function FriendsSection() {
 
         {showAddFriend && (
           <CardContent className="pt-0 pb-4">
-            <div className="flex gap-2 p-3 bg-muted/30 rounded-lg">
-              <Input
-                placeholder={PLACEHOLDERS.USER_ID}
-                value={targetUserId}
-                onChange={e => setTargetUserId(e.target.value)}
-                className="text-sm"
-              />
-              <Button
-                size="sm"
-                onClick={handleSendRequest}
-                disabled={!targetUserId.trim() || sendRequestMutation.isPending}
-              >
-                {sendRequestMutation.isPending ? BUTTON_LABELS.SENDING : BUTTON_LABELS.SEND_REQUEST}
-              </Button>
+            <div className="p-3 bg-muted/30 rounded-lg space-y-2">
+              <div className="flex gap-2">
+                <div className="relative flex-1" ref={searchContainerRef}>
+                  <Input
+                    placeholder={PLACEHOLDERS.SEARCH_NICKNAME}
+                    value={searchTerm}
+                    onChange={e => {
+                      setSearchTerm(e.target.value);
+                      setSelectedUser(null);
+                      setShowResults(true);
+                    }}
+                    onFocus={() => setShowResults(true)}
+                    className="text-sm"
+                  />
+                  {showResults && debouncedTerm.length >= 2 && (
+                    <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-popover border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {isSearching ? (
+                        <div className="p-3 text-sm text-muted-foreground text-center">
+                          {MESSAGES.LOADING}
+                        </div>
+                      ) : !searchResults?.data.length ? (
+                        <div className="p-3 text-sm text-muted-foreground text-center">
+                          {MESSAGES.NO_SEARCH_RESULTS}
+                        </div>
+                      ) : (
+                        searchResults.data.map(user => (
+                          <button
+                            key={user.id}
+                            type="button"
+                            className="w-full flex items-center gap-3 p-2.5 hover:bg-muted/50 transition-colors text-left"
+                            onClick={() => handleSelectUser(user)}
+                          >
+                            {user.avatar_url ? (
+                              <img
+                                src={user.avatar_url}
+                                alt={user.nickname}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs font-bold">
+                                {user.nickname.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium truncate">{user.nickname}</p>
+                              {user.bio && (
+                                <p className="text-xs text-muted-foreground truncate">{user.bio}</p>
+                              )}
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                  {showResults && debouncedTerm.length > 0 && debouncedTerm.length < 2 && (
+                    <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-popover border rounded-lg shadow-lg">
+                      <div className="p-3 text-sm text-muted-foreground text-center">
+                        {MESSAGES.SEARCH_MIN_LENGTH}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={handleSendRequest}
+                  disabled={!selectedUser || sendRequestMutation.isPending}
+                >
+                  {sendRequestMutation.isPending
+                    ? BUTTON_LABELS.SENDING
+                    : BUTTON_LABELS.SEND_REQUEST}
+                </Button>
+              </div>
             </div>
           </CardContent>
         )}

@@ -9,7 +9,7 @@ export {
   useDeleteQuote,
 } from './use-reading-records';
 
-export { useProfile, useUpdateProfile } from './use-profile';
+export { useProfile, useUpdateProfile, usePublicProfile, useSearchUsers } from './use-profile';
 
 export {
   useFriendsList,

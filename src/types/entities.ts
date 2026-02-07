@@ -112,3 +112,6 @@ export interface SentRequestItem {
   addressee: ProfileInfo;
   requested_at: string;
 }
+
+/** Public profile (no timestamps, subset of Profile) */
+export type PublicProfile = ProfileInfo;
