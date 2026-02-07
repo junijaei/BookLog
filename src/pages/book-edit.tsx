@@ -25,19 +25,30 @@ import {
   BUTTON_LABELS,
   FIELD_LABELS,
   getReadingStatusLabel,
+  getVisibilityLabel,
   MESSAGES,
   MISC,
   PLACEHOLDERS,
 } from '@/lib/constants';
-import type { BookEditFormData, LocalQuote, NewQuoteFormData, Quote, ReadingStatus } from '@/types';
+import type {
+  BookEditFormData,
+  LocalQuote,
+  NewQuoteFormData,
+  Quote,
+  ReadingStatus,
+  Visibility,
+} from '@/types';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '@/hooks/use-auth';
 
 const READING_STATUSES: ReadingStatus[] = ['want_to_read', 'reading', 'finished', 'abandoned'];
+const VISIBILITIES: Visibility[] = ['public', 'friends', 'private'];
 
 export function BookEditPage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -64,6 +75,7 @@ export function BookEditPage() {
       start_date: '',
       end_date: '',
       review: '',
+      visibility: 'public' as Visibility,
     },
   });
 
@@ -96,6 +108,7 @@ export function BookEditPage() {
       start_date: record.reading_log.start_date || '',
       end_date: record.reading_log.end_date || '',
       review: record.reading_log.review || '',
+      visibility: record.reading_log.visibility || 'public',
     });
 
     setQuotes(
@@ -107,8 +120,6 @@ export function BookEditPage() {
       }))
     );
   }, [record, reset]);
-
-  useEffect(() => console.log(record), [record]);
 
   const onSubmit = async (data: BookEditFormData) => {
     if (!record || !id) return;
@@ -130,6 +141,7 @@ export function BookEditPage() {
           start_date: data.start_date || null,
           end_date: data.end_date || null,
           review: data.review || null,
+          visibility: data.visibility,
         },
         quotes: quotes.map(q => ({
           id: q.id,
@@ -217,6 +229,10 @@ export function BookEditPage() {
         </div>
       </div>
     );
+  }
+
+  if (user?.id !== record.reading_log.user_id) {
+    return <Navigate to={`/books/${id}`} replace />;
   }
 
   return (
@@ -323,53 +339,45 @@ export function BookEditPage() {
                   <Controller
                     name="status"
                     control={control}
-                    render={({ field, fieldState }) => {
-                      console.log(field);
-                      return (
-                        <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel htmlFor="status">{FIELD_LABELS.STATUS}</FieldLabel>
-                          <Select
-                            name={field.name}
-                            value={field.value}
-                            onValueChange={value => value && field.onChange(value)}
-                          >
-                            <SelectTrigger id="status" aria-invalid={fieldState.invalid}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {READING_STATUSES.map(status => (
-                                <SelectItem key={status} value={status}>
-                                  {getReadingStatusLabel(status)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                        </Field>
-                      );
-                    }}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="status">{FIELD_LABELS.STATUS}</FieldLabel>
+                        <Select
+                          name={field.name}
+                          value={field.value}
+                          onValueChange={value => value && field.onChange(value)}
+                        >
+                          <SelectTrigger id="status" aria-invalid={fieldState.invalid}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {READING_STATUSES.map(status => (
+                              <SelectItem key={status} value={status}>
+                                {getReadingStatusLabel(status)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
                   />
 
                   <Controller
                     name="current_page"
                     control={control}
-                    render={({ field, fieldState }) => {
-                      console.log(field);
-                      return (
-                        <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel htmlFor="current_page">
-                            {FIELD_LABELS.CURRENT_PAGE}
-                          </FieldLabel>
-                          <Input
-                            {...field}
-                            id="current_page"
-                            type="number"
-                            aria-invalid={fieldState.invalid}
-                          />
-                          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                        </Field>
-                      );
-                    }}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="current_page">{FIELD_LABELS.CURRENT_PAGE}</FieldLabel>
+                        <Input
+                          {...field}
+                          id="current_page"
+                          type="number"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
                   />
 
                   <Controller
@@ -392,7 +400,33 @@ export function BookEditPage() {
                   />
                 </div>
 
-                {/* Reading period */}
+                <Controller
+                  name="visibility"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="visibility">{FIELD_LABELS.VISIBILITY}</FieldLabel>
+                      <Select
+                        name={field.name}
+                        value={field.value}
+                        onValueChange={value => value && field.onChange(value)}
+                      >
+                        <SelectTrigger id="visibility" aria-invalid={fieldState.invalid}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {VISIBILITIES.map(v => (
+                            <SelectItem key={v} value={v}>
+                              {getVisibilityLabel(v)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+
                 <Field>
                   <FieldLabel htmlFor="reading_period">{FIELD_LABELS.READING_PERIOD}</FieldLabel>
                   <DateRangePicker

@@ -4,7 +4,7 @@
  * Types for form state and validation.
  */
 
-import type { ReadingStatus } from './entities';
+import type { ReadingStatus, Visibility } from './entities';
 
 /** Book form data */
 export interface BookFormData {
@@ -22,6 +22,7 @@ export interface ReadingLogFormData {
   start_date: string;
   end_date: string;
   review: string;
+  visibility: Visibility;
 }
 
 /** Combined book edit form data */

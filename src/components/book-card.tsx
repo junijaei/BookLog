@@ -7,10 +7,11 @@ import { Card, CardFooter, CardHeader } from './ui/card';
 
 interface BookCardProps {
   record: ReadingRecord;
+  showAuthor?: boolean;
 }
 
-export function BookCard({ record }: BookCardProps) {
-  const { book, reading_log } = record;
+export function BookCard({ record, showAuthor }: BookCardProps) {
+  const { book, reading_log, profile } = record;
 
   const progress =
     book.total_pages && reading_log.current_page
@@ -29,6 +30,11 @@ export function BookCard({ record }: BookCardProps) {
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-base leading-tight line-clamp-2">{book.title}</h3>
               <p className="text-sm text-muted-foreground mt-0.5 truncate">{book.author}</p>
+              {showAuthor && profile && (
+                <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
+                  by {profile.nickname}
+                </p>
+              )}
               <div className="mt-2">
                 <StatusBadge status={reading_log.status} />
               </div>

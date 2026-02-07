@@ -4,7 +4,7 @@
  * Request/response types for API operations.
  */
 
-import type { Book, FriendAction, ReadingLog, ReadingStatus } from './entities';
+import type { Book, FriendAction, ReadingLog, ReadingStatus, Visibility } from './entities';
 
 // =============================================================================
 // Book API Types
@@ -112,6 +112,7 @@ export interface UpsertPayload {
     start_date?: string | null;
     end_date?: string | null;
     review?: string | null;
+    visibility?: Visibility;
   };
   /** Quotes to create/update */
   quotes?: UpsertQuoteData[];

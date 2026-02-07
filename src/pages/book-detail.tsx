@@ -27,9 +27,11 @@ import {
 import type { Quote } from '@/types';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useAuth } from '@/hooks/use-auth';
 
 export function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const { data: record, isLoading } = useReadingRecord(id);
 
   const createQuoteMutation = useCreateQuote();
@@ -149,6 +151,7 @@ export function BookDetailPage() {
   }
 
   const { book, reading_log, quotes } = record;
+  const isOwner = user?.id === reading_log.user_id;
 
   return (
     <div className="min-h-screen">
@@ -162,9 +165,11 @@ export function BookDetailPage() {
             </Link>
             <div className="flex gap-2">
               <ThemeToggle />
-              <Link to={`/books/${id}/edit`}>
-                <Button size="sm">{BUTTON_LABELS.EDIT}</Button>
-              </Link>
+              {isOwner && (
+                <Link to={`/books/${id}/edit`}>
+                  <Button size="sm">{BUTTON_LABELS.EDIT}</Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -221,9 +226,11 @@ export function BookDetailPage() {
               {FIELD_LABELS.QUOTES}
               <span className="text-muted-foreground font-normal ml-2">({quotes.length})</span>
             </h2>
-            <Button variant="outline" size="sm" onClick={() => setShowAddQuote(!showAddQuote)}>
-              {showAddQuote ? BUTTON_LABELS.CANCEL : BUTTON_LABELS.ADD_QUOTE}
-            </Button>
+            {isOwner && (
+              <Button variant="outline" size="sm" onClick={() => setShowAddQuote(!showAddQuote)}>
+                {showAddQuote ? BUTTON_LABELS.CANCEL : BUTTON_LABELS.ADD_QUOTE}
+              </Button>
+            )}
           </div>
 
           {/* Add quote form */}
@@ -277,19 +284,21 @@ export function BookDetailPage() {
                       {quote.noted_at && <span className="mx-2">·</span>}
                       {quote.noted_at}
                     </span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="sm" onClick={() => openEditDialog(quote)}>
-                        {BUTTON_LABELS.EDIT}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openDeleteDialog(quote)}
-                        disabled={deleteQuoteMutation.isPending}
-                      >
-                        {BUTTON_LABELS.DELETE}
-                      </Button>
-                    </div>
+                    {isOwner && (
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="sm" onClick={() => openEditDialog(quote)}>
+                          {BUTTON_LABELS.EDIT}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDeleteDialog(quote)}
+                          disabled={deleteQuoteMutation.isPending}
+                        >
+                          {BUTTON_LABELS.DELETE}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </article>
               ))}

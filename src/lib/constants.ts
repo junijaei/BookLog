@@ -1,4 +1,4 @@
-import type { ReadingStatus } from '@/types';
+import type { ReadingStatus, Visibility } from '@/types';
 
 // Reading Status Labels
 export const READING_STATUS_LABELS: Record<ReadingStatus, string> = {
@@ -14,6 +14,11 @@ export const PAGE_TITLES = {
   BOOK_DETAIL: '도서 상세',
   BOOK_EDIT: '도서 편집',
   BOOK_NEW: '새 도서 추가',
+  MY_PAGE: '마이페이지',
+  EDIT_PROFILE: '프로필 편집',
+  FRIENDS: '친구',
+  FRIEND_REQUESTS: '친구 요청',
+  FEED: '피드',
 } as const;
 
 // Button Labels
@@ -33,6 +38,19 @@ export const BUTTON_LABELS = {
   CLOSE: '닫기',
   BACK_TO_LIST: '목록으로',
   ADD_FIRST_BOOK: '첫 도서 추가하기',
+  ACCEPT: '수락',
+  REJECT: '거절',
+  ACCEPTING: '수락 중...',
+  REJECTING: '거절 중...',
+  SEND_REQUEST: '친구 요청',
+  SENDING: '전송 중...',
+  BLOCK: '차단',
+  UNBLOCK: '차단 해제',
+  SIGN_OUT: '로그아웃',
+  EDIT_PROFILE: '프로필 편집',
+  REMOVE_FRIEND: '친구 삭제',
+  CANCEL_REQUEST: '요청 취소',
+  LOAD_MORE: '더 보기',
 } as const;
 
 // Field Labels
@@ -53,7 +71,12 @@ export const FIELD_LABELS = {
   PAGE_NUMBER: 'P.',
   PROGRESS: '진행률',
   READING_PERIOD: '독서 기간',
-  DELETE_RECORD: '독서 기록 삭제'
+  DELETE_RECORD: '독서 기록 삭제',
+  NICKNAME: '닉네임',
+  BIO: '자기소개',
+  AVATAR_URL: '프로필 이미지 URL',
+  VISIBILITY: '공개 범위',
+  USER_ID: '사용자 ID',
 } as const;
 
 // Placeholders
@@ -62,6 +85,10 @@ export const PLACEHOLDERS = {
   COVER_IMAGE_URL: 'https://example.com/cover.jpg',
   QUOTE_TEXT: '인용구 텍스트...',
   PAGE_NUMBER: '페이지',
+  NICKNAME: '닉네임을 입력하세요',
+  BIO: '자기소개를 입력하세요',
+  AVATAR_URL: 'https://example.com/avatar.png',
+  USER_ID: '사용자 ID를 입력하세요',
 } as const;
 
 // Messages
@@ -83,6 +110,22 @@ export const MESSAGES = {
   NO_QUOTES: '등록된 인용구가 없습니다.',
   DELETE_QUOTE_CONFIRMATION: '이 인용구를 삭제하시겠습니까?',
   REQUIRED_FIELD: '*',
+  NO_FRIENDS: '아직 친구가 없습니다.',
+  NO_RECEIVED_REQUESTS: '받은 친구 요청이 없습니다.',
+  NO_SENT_REQUESTS: '보낸 친구 요청이 없습니다.',
+  FRIEND_REQUEST_SENT: '친구 요청을 보냈습니다.',
+  FRIEND_REQUEST_ACCEPTED: '친구 요청을 수락했습니다.',
+  FRIEND_REQUEST_REJECTED: '친구 요청을 거절했습니다.',
+  FRIEND_REMOVED: '친구를 삭제했습니다.',
+  FRIEND_REQUEST_AUTO_ACCEPTED: '서로 친구 요청을 보내 자동으로 친구가 되었습니다.',
+  PROFILE_UPDATED: '프로필이 업데이트되었습니다.',
+  NICKNAME_LENGTH_ERROR: '닉네임은 2~20자 사이여야 합니다.',
+  NICKNAME_TAKEN: '이미 사용 중인 닉네임입니다.',
+  REMOVE_FRIEND_CONFIRMATION: '이 친구를 삭제하시겠습니까?',
+  CANCEL_REQUEST_CONFIRMATION: '이 친구 요청을 취소하시겠습니까?',
+  BLOCK_CONFIRMATION: '이 사용자를 차단하시겠습니까? 차단하면 친구 관계가 해제됩니다.',
+  NO_FEED_BOOKS: '피드에 표시할 도서가 없습니다.',
+  NO_EDIT_PERMISSION: '본인의 독서 기록만 편집할 수 있습니다.',
 } as const;
 
 // Filter Labels
@@ -91,6 +134,9 @@ export const FILTER_LABELS = {
   SORT_BY_UPDATED: '최근 업데이트',
   SORT_BY_START_DATE: '시작일',
   SORT_BY_END_DATE: '완료일',
+  FRIENDS_ONLY: '친구',
+  SCOPE_ALL: '전체',
+  SCOPE_FRIENDS: '친구',
 } as const;
 
 // Misc
@@ -103,6 +149,12 @@ export const MISC = {
   DELETE_QUOTE: '인용구 삭제',
   WILL_BE_ADDED_ON_SAVE: '저장 시 추가됨',
   DELETE_READING_LOG: '독서 기록 삭제',
+  RECEIVED_REQUESTS: '받은 요청',
+  SENT_REQUESTS: '보낸 요청',
+  MY_PAGE: '내 정보',
+  FRIEND_LIST: '친구 목록',
+  FRIEND_SINCE: '친구가 된 날',
+  REQUESTED_AT: '요청일',
 } as const;
 
 // Constants
@@ -138,7 +190,24 @@ export function formatDateRange(startDate: string | null, endDate: string | null
   return dates.length > 0 ? dates.join(' ~ ') : null;
 }
 
-// Helper function to render rating stars
+// Visibility Labels
+export const VISIBILITY_LABELS: Record<Visibility, string> = {
+  public: '전체 공개',
+  friends: '친구만',
+  private: '비공개',
+};
+
+export function getVisibilityLabel(visibility: Visibility): string {
+  return VISIBILITY_LABELS[visibility];
+}
+
+// Navigation Labels
+export const NAV_LABELS = {
+  MY_BOOKS: '내 서재',
+  FEED: '피드',
+  MY_PAGE: '마이페이지',
+} as const;
+
 export function renderRatingStars(rating: number): string {
   return '★'.repeat(rating) + '☆'.repeat(5 - rating);
 }

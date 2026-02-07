@@ -1,13 +1,16 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { AppLayout } from './components/app-layout';
 import { AuthGuard } from './components/auth-guard';
 import { AuthProvider } from './lib/auth/auth-provider';
 import { ThemeProvider } from './lib/theme-provider';
 import { BookDetailPage } from './pages/book-detail';
 import { BookEditPage } from './pages/book-edit';
-import { BookListPage } from './pages/book-list';
 import { BookNewPage } from './pages/book-new';
 import { ErrorPage } from './pages/error';
+import { FeedPage } from './pages/feed';
 import { LoginPage } from './pages/login';
+import { MyBooksPage } from './pages/my-books';
+import { MyPage } from './pages/my-page';
 import { NotFoundPage } from './pages/not-found';
 
 function App() {
@@ -16,18 +19,39 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Protected routes */}
             <Route
               path="/"
               element={
                 <AuthGuard>
-                  <BookListPage />
+                  <AppLayout>
+                    <MyBooksPage />
+                  </AppLayout>
                 </AuthGuard>
               }
             />
+            <Route
+              path="/feed"
+              element={
+                <AuthGuard>
+                  <AppLayout>
+                    <FeedPage />
+                  </AppLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/mypage"
+              element={
+                <AuthGuard>
+                  <AppLayout>
+                    <MyPage />
+                  </AppLayout>
+                </AuthGuard>
+              }
+            />
+
             <Route
               path="/books/new"
               element={
