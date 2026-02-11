@@ -9,6 +9,8 @@ export {
   useDeleteQuote,
 } from './use-reading-records';
 
+export { useInfiniteScroll } from './use-infinite-scroll';
+
 export { useProfile, useUpdateProfile, usePublicProfile, useSearchUsers } from './use-profile';
 
 export {

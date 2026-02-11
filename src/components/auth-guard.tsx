@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/use-auth';
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { BookCardSkeleton } from '@/components/skeletons';
+import { BookListSkeleton } from '@/components/skeletons';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface AuthGuardProps {
@@ -24,11 +24,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
           </div>
         </div>
         <div className="container mx-auto px-4 py-4 max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <BookCardSkeleton key={i} />
-            ))}
-          </div>
+          <BookListSkeleton />
         </div>
         <div className="fixed bottom-0 left-0 right-0 border-t bg-background">
           <div className="flex items-center justify-around h-14 max-w-lg mx-auto">

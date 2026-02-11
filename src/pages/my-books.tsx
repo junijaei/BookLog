@@ -1,5 +1,4 @@
-import { BookCard } from '@/components/book-card';
-import { BookCardSkeleton } from '@/components/skeletons';
+import { BookCardList } from '@/components/book-card-list';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useReadingRecords } from '@/hooks';
+import { useInfiniteScroll, useReadingRecords } from '@/hooks';
 import {
   BUTTON_LABELS,
   FILTER_LABELS,
@@ -20,7 +19,7 @@ import {
   PLACEHOLDERS,
 } from '@/lib/constants';
 import type { ReadingRecordFilters, ReadingRecordSort, ReadingStatus } from '@/types';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 type SortField = 'updated_at' | 'start_date' | 'end_date';
@@ -62,24 +61,11 @@ export function MyBooksPage() {
 
   const records = useMemo(() => data?.pages.flatMap(page => page.data) ?? [], [data]);
 
-  const observerTarget = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const target = observerTarget.current;
-    if (!target) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const { observerTarget } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   const handleStatusChange = (value: string) => {
     const status = value as ReadingStatus | 'all';
@@ -158,40 +144,22 @@ export function MyBooksPage() {
       </header>
 
       <main className="container mx-auto px-4 py-4 max-w-6xl">
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <BookCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : records.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <p className="text-sm">{MESSAGES.NO_BOOKS_FOUND}</p>
-            <Link to="/books/new">
-              <Button variant="outline" size="sm" className="mt-4">
-                {BUTTON_LABELS.ADD_FIRST_BOOK}
-              </Button>
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in-0 duration-300">
-              {records.map(record => (
-                <BookCard key={record.reading_log.id} record={record} />
-              ))}
+        <BookCardList
+          records={records}
+          isLoading={isLoading}
+          isFetchingNextPage={isFetchingNextPage}
+          observerTarget={observerTarget}
+          emptyState={
+            <div className="text-center py-12 text-muted-foreground">
+              <p className="text-sm">{MESSAGES.NO_BOOKS_FOUND}</p>
+              <Link to="/books/new">
+                <Button variant="outline" size="sm" className="mt-4">
+                  {BUTTON_LABELS.ADD_FIRST_BOOK}
+                </Button>
+              </Link>
             </div>
-
-            {isFetchingNextPage && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <BookCardSkeleton key={i} />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        <div ref={observerTarget} className="h-10" />
+          }
+        />
       </main>
     </div>
   );

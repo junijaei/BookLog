@@ -1,13 +1,12 @@
-import { BookCard } from '@/components/book-card';
+import { BookCardList } from '@/components/book-card-list';
 import { EmptyState } from '@/components/empty-state';
-import { BookCardSkeleton } from '@/components/skeletons';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { useReadingRecords } from '@/hooks';
+import { useInfiniteScroll, useReadingRecords } from '@/hooks';
 import { FILTER_LABELS, MESSAGES, PAGE_TITLES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { FeedScope, ReadingRecordFilters, ReadingRecordSort } from '@/types';
 import { Rss } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const SCOPE_OPTIONS: { value: FeedScope; label: string }[] = [
   { value: 'all', label: FILTER_LABELS.SCOPE_ALL },
@@ -31,24 +30,11 @@ export function FeedPage() {
 
   const records = useMemo(() => data?.pages.flatMap(page => page.data) ?? [], [data]);
 
-  const observerTarget = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const target = observerTarget.current;
-    if (!target) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const { observerTarget } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   return (
     <div className="min-h-screen">
@@ -79,33 +65,16 @@ export function FeedPage() {
       </header>
 
       <main className="container mx-auto px-4 py-4 max-w-6xl">
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <BookCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : records.length === 0 ? (
-          <EmptyState icon={<Rss size={48} strokeWidth={1} />} message={MESSAGES.NO_FEED_BOOKS} />
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in-0 duration-300">
-              {records.map(record => (
-                <BookCard key={record.reading_log.id} record={record} showAuthor />
-              ))}
-            </div>
-
-            {isFetchingNextPage && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <BookCardSkeleton key={i} />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        <div ref={observerTarget} className="h-10" />
+        <BookCardList
+          records={records}
+          isLoading={isLoading}
+          isFetchingNextPage={isFetchingNextPage}
+          observerTarget={observerTarget}
+          showAuthor
+          emptyState={
+            <EmptyState icon={<Rss size={48} strokeWidth={1} />} message={MESSAGES.NO_FEED_BOOKS} />
+          }
+        />
       </main>
     </div>
   );
